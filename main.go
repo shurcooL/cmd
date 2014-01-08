@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"strings"
 
 	. "gist.github.com/5286084.git"
@@ -33,7 +34,7 @@ func NewRouter() *httputil.ReverseProxy {
 			r.Body = ioutil.NopCloser(bytes.NewReader(body))
 
 			// TODO: Maybe just do it right and use url.ParseQuery?
-			usePrivate = strings.HasPrefix(string(body), fmt.Sprintf("path=github.com%%2F%s%%2F", *gitHubUserFlag))
+			usePrivate = strings.HasPrefix(string(body), "path="+url.QueryEscape(fmt.Sprintf("github.com/%s/", *gitHubUserFlag)))
 		case r.URL.Path == "/-/index":
 			usePrivate = true
 		case r.URL.Path == "/":
