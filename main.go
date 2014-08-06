@@ -11,7 +11,7 @@ import (
 	"net/url"
 	"strings"
 
-	. "gist.github.com/5286084.git"
+	. "github.com/shurcooL/go/gists/gist5286084"
 )
 
 var httpFlag = flag.String("http", ":80", "Listen for HTTP connections on this address")
