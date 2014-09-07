@@ -19,6 +19,7 @@ func dumpRequestHandler(w http.ResponseWriter, req *http.Request) {
 
 	fmt.Println(string(dump))
 	goon.DumpExpr(req.URL.Query())
+	goon.DumpExpr(req.RemoteAddr)
 }
 
 func main() {
