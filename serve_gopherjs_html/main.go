@@ -22,6 +22,7 @@ func main() {
 	fmt.Printf("serving at http://%s/index.html\n", *httpFlag)
 
 	http.Handle("/index.html", gopherjs_http.HtmlFile(flag.Args()[0]))
+	http.Handle("/", http.FileServer(http.Dir(".")))
 	err := http.ListenAndServe(*httpFlag, nil)
 	if err != nil {
 		panic(err)
