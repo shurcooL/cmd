@@ -14,9 +14,9 @@ import (
 	. "github.com/shurcooL/go/gists/gist5286084"
 )
 
-var httpFlag = flag.String("http", ":80", "Listen for HTTP connections on this address")
-var gitHubUserFlag = flag.String("github-user", "", "GitHub user with private repos (required)")
-var privateGodocHostFlag = flag.String("private-godoc-host", "127.0.0.1:8080", "Host of private Godoc server")
+var httpFlag = flag.String("http", ":80", "Listen for HTTP connections on this address.")
+var gitHubUserFlag = flag.String("github-user", "", "GitHub user with private repos (required).")
+var privateGodocHostFlag = flag.String("private-godoc-host", "127.0.0.1:8080", "Host of private Godoc server.")
 
 func NewRouter() *httputil.ReverseProxy {
 	director := func(r *http.Request) {
