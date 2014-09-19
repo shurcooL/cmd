@@ -11,11 +11,18 @@ import (
 
 var httpFlag = flag.String("http", ":8080", "Listen for HTTP connections on this address.")
 
+func usage() {
+	fmt.Fprintln(os.Stderr, "Usage: gopherjs_serve_html file.html")
+	flag.PrintDefaults()
+	os.Exit(2)
+}
+
 func main() {
+	flag.Usage = usage
 	flag.Parse()
 
-	if len(flag.Args()) != 1 {
-		fmt.Fprintln(os.Stderr, "usage: serve_gopherjs_html file.html")
+	if flag.NArg() != 1 {
+		usage()
 		return
 	}
 
