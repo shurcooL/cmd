@@ -29,8 +29,8 @@ func main() {
 	//goon.DumpExpr(forward.Search("github.com/shurcooL/go/github_flavored_markdown"))
 
 	target := "github.com/shurcooL/go/github_flavored_markdown"
-	if len(os.Args) > 1 {
-		target = os.Args[0]
+	if len(os.Args) >= 2 {
+		target = os.Args[1]
 	}
 	reachable := reverse.Search(target)
 
