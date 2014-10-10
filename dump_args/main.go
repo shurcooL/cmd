@@ -2,13 +2,29 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/shurcooL/go-goon"
 )
 
 func main() {
-	goon.DumpExpr(os.Args[0])  // Program name.
-	goon.DumpExpr(os.Args[1:]) // Program arguments.
-	goon.DumpExpr(os.Getwd())  // Current working directory.
+	out := goon.SdumpExpr(os.Args[0])  // Program name.
+	out += goon.SdumpExpr(os.Args[1:]) // Program arguments.
+	out += goon.SdumpExpr(os.Getwd())  // Current working directory.
+
+	stdin, err := ioutil.ReadAll(os.Stdin)
+	if err != nil {
+		panic(err)
+	}
+
+	out += "### Stdin ###\n" + string(stdin)
+
+	fmt.Println(out)
+
+	err = ioutil.WriteFile("/Users/Dmitri/Desktop/dump_args.txt", []byte(out), 0644)
+	if err != nil {
+		panic(err)
+	}
 }
