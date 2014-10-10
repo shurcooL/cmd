@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/shurcooL/go-goon"
 )
@@ -23,7 +24,7 @@ func main() {
 
 	fmt.Println(out)
 
-	err = ioutil.WriteFile("/Users/Dmitri/Desktop/dump_args.txt", []byte(out), 0644)
+	err = ioutil.WriteFile(filepath.Join(os.TempDir(), "dump_args.txt"), []byte(out), 0644)
 	if err != nil {
 		panic(err)
 	}
