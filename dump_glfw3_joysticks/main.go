@@ -19,7 +19,7 @@ func main() {
 
 		var present bool
 		for joy := glfw.Joystick1; joy <= glfw.JoystickLast; joy++ {
-			if glfw.JoystickPresent(joy) {
+			if ok, err := glfw.JoystickPresent(joy); err == nil && ok {
 				present = true
 				goon.DumpExpr(joy)
 				goon.DumpExpr(glfw.GetJoystickName(joy))
