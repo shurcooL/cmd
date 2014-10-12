@@ -15,8 +15,8 @@ Note that it requires `dot` command to be available (`brew install graphviz`).
 Usage
 -----
 
-```
-Usage: goimporters package
+```bash
+goimporters package
 ```
 
 Example
