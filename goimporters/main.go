@@ -1,3 +1,4 @@
+// Displays an import graph of Go packages that import the specified Go package in your GOPATH workspace.
 package main
 
 import (
@@ -17,6 +18,15 @@ import (
 	"github.com/shurcooL/go-goon"
 	"github.com/shurcooL/go/u/u3"
 )
+
+func init() {
+	if _, err := exec.LookPath("dot"); err != nil {
+		// TODO: Replace dot with an importable native Go package to get rid of this annoying external dependency.
+		fmt.Fprintln(os.Stderr, "`dot` command is required (try `brew install graphviz` to install it).")
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
 
 func main() {
 	forward, reverse, graphErrors := importgraph.Build(&build.Default)
