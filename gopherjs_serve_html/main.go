@@ -1,3 +1,4 @@
+// Command gopherjs_serve_html serves an html file with "text/go" script type support.
 package main
 
 import (
