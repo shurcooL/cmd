@@ -13,7 +13,7 @@ import (
 	"os/exec"
 	"time"
 
-	"code.google.com/p/go.tools/refactor/importgraph"
+	"golang.org/x/tools/refactor/importgraph"
 
 	"github.com/shurcooL/go-goon"
 	"github.com/shurcooL/go/u/u3"
