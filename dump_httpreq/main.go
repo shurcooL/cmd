@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 
@@ -18,6 +19,11 @@ func dumpRequestHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	fmt.Println(string(dump))
+	if body, err := ioutil.ReadAll(req.Body); err != nil {
+		panic(err)
+	} else if len(body) <= 64 {
+		fmt.Printf("body: %v len: %v\n", body, len(body))
+	}
 	goon.DumpExpr(req.URL.Query())
 	goon.DumpExpr(req.RemoteAddr)
 }
