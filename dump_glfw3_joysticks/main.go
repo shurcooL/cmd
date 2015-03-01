@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	glfw "github.com/shurcooL/glfw3"
+	"github.com/go-gl/glfw/v3.1/glfw"
 	"github.com/shurcooL/go-goon"
 )
 
