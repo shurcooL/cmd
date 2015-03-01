@@ -1,4 +1,4 @@
-// Displays an import graph of Go packages that import the specified Go package in your GOPATH workspace.
+// Displays an import graph within specified Go packages.
 package main
 
 import (
@@ -15,9 +15,7 @@ import (
 	"time"
 
 	"github.com/kisielk/gotool"
-	"github.com/shurcooL/go-goon"
 	"github.com/shurcooL/go/u/u3"
-	"golang.org/x/tools/refactor/importgraph"
 )
 
 func init() {
@@ -30,8 +28,14 @@ func init() {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "Usage: goimporters package")
+	fmt.Fprint(os.Stderr, "Usage: goimportgraph [packages]\n")
 	flag.PrintDefaults()
+	fmt.Fprint(os.Stderr, `
+Examples:
+  goimportgraph encoding/...
+
+  goimportgraph github.com/shurcooL/Conception-go/...
+`)
 	os.Exit(2)
 }
 
@@ -41,29 +45,24 @@ func main() {
 
 	importPathPatterns := flag.Args()
 	importPaths := gotool.ImportPaths(importPathPatterns)
-	if len(importPaths) != 1 {
-		fmt.Fprintf(os.Stderr, "need to specify 1 package, but matched %v\n", len(importPaths))
-		usage()
-		return
+	importPathsSet := make(map[string]bool, len(importPaths))
+	for _, importPath := range importPaths {
+		importPathsSet[importPath] = true
 	}
-	target := importPaths[0]
 
-	forward, reverse, graphErrors := importgraph.Build(&build.Default)
+	forward, reverse, graphErrors := BuildNoTests(&build.Default)
 	_, _, _ = forward, reverse, graphErrors
 	if graphErrors != nil {
-		goon.DumpExpr(graphErrors)
-		panic(0)
+		log.Fatalln("importgraph.Build:", graphErrors)
 	}
-
-	reachable := reverse.Search(target)
 
 	renderGraph := func() ([]byte, error) {
 		var in bytes.Buffer
 
-		fmt.Fprintln(&in, `digraph "" {`)
+		fmt.Fprintf(&in, "digraph \"\" {\n")
 		for k, v := range forward {
 			for k2 := range v {
-				if !reachable[k] || !reachable[k2] {
+				if !importPathsSet[k] || !importPathsSet[k2] || k == k2 {
 					continue
 				}
 
@@ -89,7 +88,7 @@ func main() {
 
 	graphSvg, err := renderGraph()
 	if err != nil {
-		log.Panicln("renderGraph:", err)
+		log.Fatalln("renderGraph:", err)
 	}
 
 	mux := http.NewServeMux()
