@@ -4,6 +4,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -54,6 +55,6 @@ func main() {
 
 	err := http.ListenAndServe(*httpFlag, nil)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 }
