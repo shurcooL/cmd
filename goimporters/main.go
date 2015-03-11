@@ -32,7 +32,6 @@ func init() {
 func usage() {
 	fmt.Fprintln(os.Stderr, "Usage: goimporters package")
 	flag.PrintDefaults()
-	os.Exit(2)
 }
 
 func main() {
@@ -43,7 +42,8 @@ func main() {
 	importPaths := gotool.ImportPaths(importPathPatterns)
 	if len(importPaths) != 1 {
 		fmt.Fprintf(os.Stderr, "need to specify 1 package, but matched %v\n", len(importPaths))
-		usage()
+		flag.Usage()
+		os.Exit(2)
 		return
 	}
 	target := importPaths[0]

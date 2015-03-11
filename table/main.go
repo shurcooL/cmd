@@ -2,6 +2,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -20,9 +21,8 @@ func chefConnect() *chef.Chef {
 
 func main() {
 	flag.Parse()
-	args := flag.Args()
 
-	switch {
+	switch args := flag.Args(); {
 	case len(args) == 1:
 		c := chefConnect()
 
@@ -32,9 +32,13 @@ func main() {
 		}
 
 		for _, row := range results.Rows {
-			row := row.(map[string]interface{})
+			var node chef.Node
+			err := json.Unmarshal(row, &node)
+			if err != nil {
+				panic(err)
+			}
 
-			fmt.Println(row["name"])
+			fmt.Println(node.Name)
 		}
 	case len(args) == 2 && args[0] == "ipaddress":
 		c := chefConnect()
@@ -45,12 +49,16 @@ func main() {
 		}
 
 		for _, row := range results.Rows {
-			row := row.(map[string]interface{})
+			var node chef.Node
+			err := json.Unmarshal(row, &node)
+			if err != nil {
+				panic(err)
+			}
 
-			fmt.Println(row["name"])
+			fmt.Println(node.Name)
 		}
 	default:
-		flag.PrintDefaults()
+		flag.Usage()
 		os.Exit(2)
 	}
 }

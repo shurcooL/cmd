@@ -16,7 +16,6 @@ func main() {
 	defer glfw.Terminate()
 
 	for {
-
 		var present bool
 		for joy := glfw.Joystick1; joy <= glfw.JoystickLast; joy++ {
 			if glfw.JoystickPresent(joy) {

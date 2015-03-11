@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -62,6 +63,7 @@ func main() {
 
 	if *gitHubUserFlag == "" {
 		flag.Usage()
+		os.Exit(2)
 		return
 	}
 

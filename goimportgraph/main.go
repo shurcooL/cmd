@@ -36,7 +36,6 @@ Examples:
 
   goimportgraph github.com/shurcooL/Conception-go/...
 `)
-	os.Exit(2)
 }
 
 func main() {
