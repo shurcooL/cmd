@@ -57,6 +57,17 @@ func main() {
 
 			fmt.Println(node.Name)
 		}
+	case len(args) == 2 && args[0] == "role" && args[1] == "list":
+		c := chefConnect()
+
+		roles, err := c.GetRoles()
+		if err != nil {
+			panic(err)
+		}
+
+		for role := range roles {
+			fmt.Println(role)
+		}
 	default:
 		flag.Usage()
 		os.Exit(2)
