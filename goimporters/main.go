@@ -40,13 +40,6 @@ func main() {
 
 	importPathPatterns := flag.Args()
 	importPaths := gotool.ImportPaths(importPathPatterns)
-	if len(importPaths) != 1 {
-		fmt.Fprintf(os.Stderr, "need to specify 1 package, but matched %v\n", len(importPaths))
-		flag.Usage()
-		os.Exit(2)
-		return
-	}
-	target := importPaths[0]
 
 	forward, reverse, graphErrors := importgraph.Build(&build.Default)
 	_, _, _ = forward, reverse, graphErrors
@@ -55,15 +48,30 @@ func main() {
 		panic(0)
 	}
 
-	reachable := reverse.Search(target)
+	var reachables []map[string]bool
+	for _, importPath := range importPaths {
+		reachables = append(reachables, reverse.Search(importPath))
+	}
+
+	isReachable := func(k, k2 string) bool {
+		for _, reachable := range reachables {
+			if reachable[k] && reachable[k2] {
+				return true
+			}
+		}
+		return false
+	}
 
 	renderGraph := func() ([]byte, error) {
 		var in bytes.Buffer
 
 		fmt.Fprintln(&in, `digraph "" {`)
+		for _, importPath := range importPaths {
+			fmt.Fprintf(&in, "	%q [shape=box, style=bold];\n", importPath)
+		}
 		for k, v := range forward {
 			for k2 := range v {
-				if !reachable[k] || !reachable[k2] {
+				if !isReachable(k, k2) {
 					continue
 				}
 
