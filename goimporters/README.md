@@ -25,7 +25,7 @@ Example
 Here's a sample run:
 
 ```bash
-goimporters "github.com/shurcooL/go/github_flavored_markdown"
+goimporters "github.com/shurcooL/github_flavored_markdown"
 ```
 
 Output:
