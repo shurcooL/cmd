@@ -11,6 +11,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"go/build"
 	"go/doc"
 	"log"
 	"os"
@@ -28,7 +29,7 @@ func t(text string) *template.Template {
 // Filename -> Template.
 var templates = map[string]*template.Template{
 
-	"./README.md": t(`# {{.Doc.Name}} [![Build Status](https://travis-ci.org/{{.Username}}/{{.Doc.Name}}.svg?branch=master)](https://travis-ci.org/{{.Username}}/{{.Doc.Name}})
+	"./README.md": t(`# {{.Doc.Name}} [![Build Status](https://travis-ci.org/{{.Username}}/{{.Doc.Name}}.svg?branch=master)](https://travis-ci.org/{{.Username}}/{{.Doc.Name}}) [![GoDoc](https://godoc.org/{{.Doc.ImportPath}}?status.svg)](https://godoc.org/{{.Doc.ImportPath}})
 
 {{.Doc.Doc}}
 Installation
@@ -36,7 +37,8 @@ Installation
 
 ` + "```bash" + `
 go get -u {{.Doc.ImportPath}}
-` + "```" + `
+{{if .HasJsTag}}go get -u -d -tags=js {{.Doc.ImportPath}}
+{{end}}` + "```" + `
 
 License
 -------
@@ -57,12 +59,26 @@ script:
 `),
 }
 
-func parseUsername(importPath string) (string, error) {
-	c := strings.Split(importPath, "/")
+type goRepo struct {
+	bpkg *build.Package
+	Doc  *doc.Package
+}
+
+func (r goRepo) Username() (string, error) {
+	c := strings.Split(r.Doc.ImportPath, "/")
 	if len(c) < 3 {
 		return "", errors.New("unexpected number of import path components")
 	}
 	return c[1], nil
+}
+
+func (r goRepo) HasJsTag() bool {
+	for _, tag := range r.bpkg.AllTags {
+		if tag == "js" {
+			return true
+		}
+	}
+	return false
 }
 
 func gen() error {
@@ -70,25 +86,22 @@ func gen() error {
 	if err != nil {
 		return err
 	}
-	dpkg, err := gist5504644.GetDocPackage(gist5504644.BuildPackageFromSrcDir(wd))
+	bpkg, err := gist5504644.BuildPackageFromSrcDir(wd)
 	if err != nil {
 		return err
 	}
-	username, err := parseUsername(dpkg.ImportPath)
+	dpkg, err := gist5504644.GetDocPackage(bpkg, nil)
 	if err != nil {
 		return err
 	}
-	var state = struct {
-		Doc      *doc.Package
-		Username string
-	}{
-		Doc:      dpkg,
-		Username: username,
+	var goRepo = goRepo{
+		bpkg: bpkg,
+		Doc:  dpkg,
 	}
 
 	for filename, t := range templates {
 		var buf bytes.Buffer
-		err = t.Execute(&buf, state)
+		err = t.Execute(&buf, goRepo)
 		if err != nil {
 			return err
 		}
