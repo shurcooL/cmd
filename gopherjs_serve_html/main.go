@@ -31,7 +31,7 @@ func main() {
 
 	// Print all addresses that are being served.
 	var hosts []string
-	if len(*httpFlag) >= 1 && (*httpFlag)[0] == ':' {
+	if len(*httpFlag) >= 1 && (*httpFlag)[0] == ':' { // ":port" form.
 		ips, err := gist8065433.GetAllIps()
 		if err != nil {
 			panic(err)
@@ -42,10 +42,10 @@ func main() {
 			}
 			hosts = append(hosts, ip+*httpFlag)
 		}
-	} else {
+	} else { // "host" or "host:port" form.
 		hosts = []string{*httpFlag}
 	}
-	fmt.Println("serving, available at:")
+	fmt.Println("serving at:")
 	for _, host := range hosts {
 		fmt.Printf("http://%s/index.html\n", host)
 	}
