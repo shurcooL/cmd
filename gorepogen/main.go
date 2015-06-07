@@ -29,7 +29,7 @@ func t(text string) *template.Template {
 // Filename -> Template.
 var templates = map[string]*template.Template{
 
-	"./README.md": t(`# {{.Doc.Name}} [![Build Status](https://travis-ci.org/{{.Username}}/{{.Doc.Name}}.svg?branch=master)](https://travis-ci.org/{{.Username}}/{{.Doc.Name}}) [![GoDoc](https://godoc.org/{{.Doc.ImportPath}}?status.svg)](https://godoc.org/{{.Doc.ImportPath}})
+	"README.md": t(`# {{.Doc.Name}} [![Build Status](https://travis-ci.org/{{.Username}}/{{.Doc.Name}}.svg?branch=master)](https://travis-ci.org/{{.Username}}/{{.Doc.Name}}) [![GoDoc](https://godoc.org/{{.Doc.ImportPath}}?status.svg)](https://godoc.org/{{.Doc.ImportPath}})
 
 {{.Doc.Doc}}
 Installation
@@ -39,14 +39,14 @@ Installation
 go get -u {{.Doc.ImportPath}}
 {{if .HasJsTag}}go get -u -d -tags=js {{.Doc.ImportPath}}
 {{end}}` + "```" + `
-
+{{if not .HasLicenseFile}}
 License
 -------
 
 - [MIT License](http://opensource.org/licenses/mit-license.php)
-`),
+{{end}}`),
 
-	"./.travis.yml": t(`language: go
+	".travis.yml": t(`language: go
 go:
   - 1.4
 install:
@@ -77,6 +77,14 @@ func (r goRepo) HasJsTag() bool {
 		if tag == "js" {
 			return true
 		}
+	}
+	return false
+}
+
+// HasLicenseFile returns true if there's a LICENSE file present in current working directory.
+func (r goRepo) HasLicenseFile() bool {
+	if fi, err := os.Stat("LICENSE"); err == nil && !fi.IsDir() {
+		return true
 	}
 	return false
 }
