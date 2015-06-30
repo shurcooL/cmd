@@ -30,7 +30,7 @@ func t(text string) *template.Template {
 // Filename -> Template.
 var templates = map[string]*template.Template{
 
-	"README.md": t(`# {{.Title}} [![Build Status](https://travis-ci.org/{{.Username}}/{{.RepoName}}.svg?branch=master)](https://travis-ci.org/{{.Username}}/{{.RepoName}}) [![GoDoc](https://godoc.org/{{.Doc.ImportPath}}?status.svg)](https://godoc.org/{{.Doc.ImportPath}})
+	"README.md": t(`# {{.Title}} [![Build Status](https://travis-ci.org/{{.TravisCIPath}}.svg?branch=master)](https://travis-ci.org/{{.TravisCIPath}}) [![GoDoc](https://godoc.org/{{.Doc.ImportPath}}?status.svg)](https://godoc.org/{{.Doc.ImportPath}})
 
 {{.Doc.Doc}}
 Installation
@@ -65,22 +65,16 @@ type goRepo struct {
 	Doc  *doc.Package
 }
 
-// Username is typically the 2nd import path element.
-func (r goRepo) Username() (string, error) {
-	c := strings.Split(r.Doc.ImportPath, "/")
+// TravisCIPath returns the Travis CI path for a GitHub repository.
+func (r goRepo) TravisCIPath() (string, error) {
+	c := strings.Split(r.bpkg.ImportPath, "/")
 	if len(c) < 3 {
 		return "", errors.New("unexpected number of import path components")
 	}
-	return c[1], nil
-}
-
-// RepoName is the repository name, typically the 3rd import path element.
-func (r goRepo) RepoName() (string, error) {
-	c := strings.Split(r.Doc.ImportPath, "/")
-	if len(c) < 3 {
-		return "", errors.New("unexpected number of import path components")
+	if c[0] != "github.com" {
+		return "", errors.New("Travis CI only supports GitHub repositories")
 	}
-	return c[2], nil
+	return path.Join(c[1], c[2]), nil
 }
 
 // Title is the package name for libraries and import path base for commands.
