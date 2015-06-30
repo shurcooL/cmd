@@ -15,6 +15,7 @@ import (
 	"go/doc"
 	"log"
 	"os"
+	"path"
 	"strings"
 	"text/template"
 
@@ -29,7 +30,7 @@ func t(text string) *template.Template {
 // Filename -> Template.
 var templates = map[string]*template.Template{
 
-	"README.md": t(`# {{.Doc.Name}} [![Build Status](https://travis-ci.org/{{.Username}}/{{.Doc.Name}}.svg?branch=master)](https://travis-ci.org/{{.Username}}/{{.Doc.Name}}) [![GoDoc](https://godoc.org/{{.Doc.ImportPath}}?status.svg)](https://godoc.org/{{.Doc.ImportPath}})
+	"README.md": t(`# {{.Title}} [![Build Status](https://travis-ci.org/{{.Username}}/{{.RepoName}}.svg?branch=master)](https://travis-ci.org/{{.Username}}/{{.RepoName}}) [![GoDoc](https://godoc.org/{{.Doc.ImportPath}}?status.svg)](https://godoc.org/{{.Doc.ImportPath}})
 
 {{.Doc.Doc}}
 Installation
@@ -64,12 +65,33 @@ type goRepo struct {
 	Doc  *doc.Package
 }
 
+// Username is typically the 2nd import path element.
 func (r goRepo) Username() (string, error) {
 	c := strings.Split(r.Doc.ImportPath, "/")
 	if len(c) < 3 {
 		return "", errors.New("unexpected number of import path components")
 	}
 	return c[1], nil
+}
+
+// RepoName is the repository name, typically the 3rd import path element.
+func (r goRepo) RepoName() (string, error) {
+	c := strings.Split(r.Doc.ImportPath, "/")
+	if len(c) < 3 {
+		return "", errors.New("unexpected number of import path components")
+	}
+	return c[2], nil
+}
+
+// Title is the package name for libraries and import path base for commands.
+func (r goRepo) Title() string {
+	switch r.bpkg.IsCommand() {
+	case true:
+		return path.Base(r.bpkg.ImportPath)
+	case false:
+		return r.bpkg.Name
+	}
+	panic("unreachable")
 }
 
 func (r goRepo) HasJsTag() bool {
