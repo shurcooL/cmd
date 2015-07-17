@@ -1,3 +1,4 @@
+// Dumps state of attached joysticks.
 package main
 
 import (

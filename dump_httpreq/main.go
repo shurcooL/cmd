@@ -1,3 +1,4 @@
+// Dumps incoming HTTP requests with full detail.
 package main
 
 import (
@@ -31,7 +32,7 @@ func dumpRequestHandler(w http.ResponseWriter, req *http.Request) {
 func main() {
 	flag.Parse()
 
-	fmt.Printf("Starting http request dumper, listening on %q...\n", *httpFlag)
+	fmt.Printf("Starting HTTP request dumper, listening on %q...\n", *httpFlag)
 
 	err := http.ListenAndServe(*httpFlag, http.HandlerFunc(dumpRequestHandler))
 	if err != nil {
