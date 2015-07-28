@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/kisielk/gotool"
-	"github.com/shurcooL/go-goon"
 	"github.com/shurcooL/go/u/u3"
 	"golang.org/x/tools/refactor/importgraph"
 )
@@ -30,7 +29,7 @@ func init() {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "Usage: goimporters package")
+	fmt.Fprintln(os.Stderr, "Usage: goimporters packages")
 	flag.PrintDefaults()
 }
 
@@ -42,10 +41,8 @@ func main() {
 	importPaths := gotool.ImportPaths(importPathPatterns)
 
 	forward, reverse, graphErrors := importgraph.Build(&build.Default)
-	_, _, _ = forward, reverse, graphErrors
 	if graphErrors != nil {
-		goon.DumpExpr(graphErrors)
-		panic(0)
+		log.Fatalln("importgraph.Build:", graphErrors)
 	}
 
 	var reachables []map[string]bool

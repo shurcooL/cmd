@@ -16,7 +16,7 @@ Usage
 -----
 
 ```bash
-goimporters package
+goimporters packages
 ```
 
 Example
@@ -25,9 +25,9 @@ Example
 Here's a sample run:
 
 ```bash
-goimporters "github.com/shurcooL/github_flavored_markdown"
+goimporters github.com/shurcooL/github_flavored_markdown
 ```
 
 Output:
 
-![image](https://cloud.githubusercontent.com/assets/1924134/4436371/9442cd46-4774-11e4-9acb-500ac37c07a3.png)
+![Screenshot](https://cloud.githubusercontent.com/assets/1924134/4436371/9442cd46-4774-11e4-9acb-500ac37c07a3.png)

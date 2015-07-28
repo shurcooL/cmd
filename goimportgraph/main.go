@@ -28,7 +28,7 @@ func init() {
 }
 
 func usage() {
-	fmt.Fprint(os.Stderr, "Usage: goimportgraph [packages]\n")
+	fmt.Fprint(os.Stderr, "Usage: goimportgraph packages\n")
 	flag.PrintDefaults()
 	fmt.Fprint(os.Stderr, `
 Examples:
@@ -49,8 +49,7 @@ func main() {
 		importPathsSet[importPath] = true
 	}
 
-	forward, reverse, graphErrors := BuildNoTests(&build.Default)
-	_, _, _ = forward, reverse, graphErrors
+	forward, _, graphErrors := BuildNoTests(&build.Default)
 	if graphErrors != nil {
 		log.Fatalln("importgraph.Build:", graphErrors)
 	}
