@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/kisielk/gotool"
+	"github.com/shurcooL/go/importgraphutil"
 	"github.com/shurcooL/go/u/u3"
 	"golang.org/x/tools/refactor/importgraph"
 )
@@ -28,6 +29,8 @@ func init() {
 	}
 }
 
+var testsFlag = flag.Bool("tests", false, "Include tests when building graph.")
+
 func usage() {
 	fmt.Fprintln(os.Stderr, "Usage: goimporters packages")
 	flag.PrintDefaults()
@@ -40,7 +43,14 @@ func main() {
 	importPathPatterns := flag.Args()
 	importPaths := gotool.ImportPaths(importPathPatterns)
 
-	forward, reverse, graphErrors := importgraph.Build(&build.Default)
+	var forward, reverse importgraph.Graph
+	var graphErrors map[string]error
+	switch *testsFlag {
+	case false:
+		forward, reverse, graphErrors = importgraphutil.BuildNoTests(&build.Default)
+	case true:
+		forward, reverse, graphErrors = importgraph.Build(&build.Default)
+	}
 	if graphErrors != nil {
 		log.Fatalln("importgraph.Build:", graphErrors)
 	}
