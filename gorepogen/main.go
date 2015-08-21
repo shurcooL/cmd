@@ -49,7 +49,7 @@ License
 
 	".travis.yml": t(`language: go
 go:
-  - 1.4
+  - 1.5
 install:
   - go get golang.org/x/tools/cmd/vet
 script:
