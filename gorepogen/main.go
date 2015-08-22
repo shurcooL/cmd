@@ -44,7 +44,7 @@ go get -u {{.Doc.ImportPath}}
 License
 -------
 
-- [MIT License](http://opensource.org/licenses/mit-license.php)
+-	[MIT License](http://opensource.org/licenses/mit-license.php)
 {{end}}`),
 
 	".travis.yml": t(`language: go
