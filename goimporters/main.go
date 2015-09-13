@@ -32,16 +32,25 @@ func init() {
 var testsFlag = flag.Bool("tests", false, "Include tests when building graph.")
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "Usage: goimporters packages")
+	fmt.Fprintln(os.Stderr, "Usage: goimporters [packages]")
 	flag.PrintDefaults()
 }
+
+func init() { log.SetFlags(0) }
 
 func main() {
 	flag.Usage = usage
 	flag.Parse()
 
 	importPathPatterns := flag.Args()
+	if len(importPathPatterns) == 0 {
+		importPathPatterns = []string{"."}
+	}
 	importPaths := gotool.ImportPaths(importPathPatterns)
+	importPaths, err := resolveRelative(importPaths)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	var forward, reverse importgraph.Graph
 	var graphErrors map[string]error
@@ -120,4 +129,20 @@ func main() {
 		}()
 	})
 	u3.DisplayHtmlInBrowser(mux, stopServerChan, "")
+}
+
+// resolveRelative checks that the packages exist, resolves relative import paths to full.
+func resolveRelative(importPaths []string) ([]string, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	for i, path := range importPaths {
+		bpkg, err := build.Import(path, wd, 0)
+		if err != nil {
+			return nil, fmt.Errorf("can't load package %q: %v", path, err)
+		}
+		importPaths[i] = bpkg.ImportPath
+	}
+	return importPaths, nil
 }
