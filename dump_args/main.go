@@ -4,16 +4,19 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
-
-	"github.com/shurcooL/go-goon"
 )
 
 func main() {
-	out := goon.SdumpExpr(os.Args[0])  // Program name.
-	out += goon.SdumpExpr(os.Args[1:]) // Program arguments.
-	out += goon.SdumpExpr(os.Getwd())  // Current working directory.
+	out := fmt.Sprintf("os.Args[0]:  %#q\n", os.Args[0])  // Program name.
+	out += fmt.Sprintf("os.Args[1:]: %#q\n", os.Args[1:]) // Program arguments.
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	out += fmt.Sprintf("os.Getwd():  %#q\n", wd) // Current working directory.
 
 	stdin, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
