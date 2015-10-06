@@ -30,15 +30,16 @@ func t(text string) *template.Template {
 // Filename -> Template.
 var templates = map[string]*template.Template{
 
-	"README.md": t(`# {{.Title}} [![Build Status](https://travis-ci.org/{{.TravisCIPath}}.svg?branch=master)](https://travis-ci.org/{{.TravisCIPath}}) [![GoDoc](https://godoc.org/{{.Doc.ImportPath}}?status.svg)](https://godoc.org/{{.Doc.ImportPath}})
+	"README.md": t(`# {{.Title}} [![Build Status](https://travis-ci.org/{{.TravisCIPath}}.svg?branch=master)](https://travis-ci.org/{{.TravisCIPath}}) [![GoDoc](https://godoc.org/{{.ImportPath}}?status.svg)](https://godoc.org/{{.ImportPath}})
 
-{{.Doc.Doc}}
+{{with .Doc}}{{.Doc}}{{else}}...
+{{end}}
 Installation
 ------------
 
 ` + "```bash" + `
-go get -u {{.Doc.ImportPath}}
-{{if .HasJsTag}}go get -u -d -tags=js {{.Doc.ImportPath}}
+go get -u {{.ImportPath}}{{if .NoGo}}/...{{end}}
+{{if .HasJsTag}}go get -u -d -tags=js {{.ImportPath}}
 {{end}}` + "```" + `
 {{if not .HasLicenseFile}}
 License
@@ -62,7 +63,13 @@ script:
 
 type goRepo struct {
 	bpkg *build.Package
+	NoGo bool
 	Doc  *doc.Package
+}
+
+// ImportPath returns the import path for a GitHub repository.
+func (r goRepo) ImportPath() string {
+	return r.bpkg.ImportPath
 }
 
 // TravisCIPath returns the Travis CI path for a GitHub repository.
@@ -78,17 +85,24 @@ func (r goRepo) TravisCIPath() (string, error) {
 }
 
 // Title is the package name for libraries and import path base for commands.
+// TODO: And repo name otherwise.
 func (r goRepo) Title() string {
-	switch r.bpkg.IsCommand() {
-	case true:
+	switch {
+	case r.NoGo:
 		return path.Base(r.bpkg.ImportPath)
-	case false:
+	case r.bpkg.IsCommand():
+		return path.Base(r.bpkg.ImportPath)
+	case !r.bpkg.IsCommand():
 		return r.bpkg.Name
+	default:
+		panic("unreachable")
 	}
-	panic("unreachable")
 }
 
 func (r goRepo) HasJsTag() bool {
+	if r.NoGo { // TODO: Look in inner Go packages, if any?
+		return false
+	}
 	for _, tag := range r.bpkg.AllTags {
 		if tag == "js" {
 			return true
@@ -110,17 +124,20 @@ func gen() error {
 	if err != nil {
 		return err
 	}
-	bpkg, err := gist5504644.BuildPackageFromSrcDir(wd)
-	if err != nil {
+	var goRepo goRepo
+	if bpkg, err := gist5504644.BuildPackageFromSrcDir(wd); err == nil {
+		goRepo.bpkg = bpkg
+
+		dpkg, err := gist5504644.GetDocPackage(bpkg, nil)
+		if err != nil {
+			return err
+		}
+		goRepo.Doc = dpkg
+	} else if _, ok := err.(*build.NoGoError); ok {
+		goRepo.bpkg = bpkg
+		goRepo.NoGo = true
+	} else {
 		return err
-	}
-	dpkg, err := gist5504644.GetDocPackage(bpkg, nil)
-	if err != nil {
-		return err
-	}
-	var goRepo = goRepo{
-		bpkg: bpkg,
-		Doc:  dpkg,
 	}
 
 	for filename, t := range templates {
