@@ -49,8 +49,14 @@ License
 {{end}}`),
 
 	".travis.yml": t(`language: go
+sudo: false
 go:
   - 1.5
+  - tip
+matrix:
+  allow_failures:
+    - go: tip
+  fast_finish: true
 install:
   - go get golang.org/x/tools/cmd/vet
 script:
