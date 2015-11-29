@@ -48,8 +48,8 @@ License
 -	[MIT License](http://opensource.org/licenses/mit-license.php)
 {{end}}`),
 
-	".travis.yml": t(`language: go
-sudo: false
+	".travis.yml": t(`sudo: false
+language: go
 go:
   - 1.5.1
   - tip
