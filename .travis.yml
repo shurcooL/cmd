@@ -1,11 +1,11 @@
-language: go
 sudo: false
 addons:
   apt_packages:
     - libgl1-mesa-dev
     - xorg-dev
+language: go
 go:
-  - 1.5.1
+  - 1.5.2
   - tip
 matrix:
   allow_failures:
