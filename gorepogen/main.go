@@ -57,8 +57,6 @@ matrix:
   allow_failures:
     - go: tip
   fast_finish: true
-install:
-  - go get golang.org/x/tools/cmd/vet
 script:
   - go get -t -v ./...
   - diff -u <(echo -n) <(gofmt -d -s .)
