@@ -17,7 +17,11 @@ func run() error {
 	}
 
 	var out bytes.Buffer
-	err = json.Indent(&out, in, "", "\t")
+	err = json.Indent(&out, bytes.TrimSpace(in), "", "\t")
+	if err != nil {
+		return err
+	}
+	err = out.WriteByte('\n')
 	if err != nil {
 		return err
 	}
