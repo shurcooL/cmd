@@ -1,18 +1,38 @@
 // Command rune_stats prints counts of total and unique runes from stdin.
+// It's helpful for finding non-ASCII characters in files.
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 
-	"github.com/shurcooL/go/gists/gist5408736"
+	"github.com/shurcooL/go/gists/gist5092053"
 )
+
+func printRuneStats(b []byte) {
+	r := []rune(string(b))
+	fmt.Printf("Total runes: %v\n", len(r))
+
+	m := map[rune]int{}
+	for _, v := range r {
+		m[v]++
+	}
+	fmt.Printf("Total unique runes: %v\n\n", len(m))
+
+	sm := gist5092053.SortMapByKey(m, true)
+
+	//for i := len(sm) - 1; i >= 0; i-- { v := sm[i]
+	for _, v := range sm {
+		fmt.Printf("%q (%v)\t%v\n", v.Key, v.Key, v.Value)
+	}
+}
 
 func main() {
 	b, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	gist5408736.PrintRuneStats(string(b))
+	printRuneStats(b)
 }
