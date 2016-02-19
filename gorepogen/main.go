@@ -51,7 +51,7 @@ License
 	".travis.yml": t(`sudo: false
 language: go
 go:
-  - 1.5.3
+  - 1.6
   - tip
 matrix:
   allow_failures:
