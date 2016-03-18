@@ -26,6 +26,7 @@ func dumpRequestHandler(w http.ResponseWriter, req *http.Request) {
 		fmt.Printf("body: %v len: %v\n", body, len(body))
 	}
 	goon.DumpExpr(req.URL.Query())
+	goon.DumpExpr(req.Referer())
 	goon.DumpExpr(req.RemoteAddr)
 }
 
