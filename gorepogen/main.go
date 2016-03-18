@@ -45,7 +45,7 @@ go get -u {{.ImportPath}}{{if .NoGo}}/...{{end}}
 License
 -------
 
--	[MIT License](http://opensource.org/licenses/mit-license.php)
+-	[MIT License](https://opensource.org/licenses/mit-license.php)
 {{end}}`),
 
 	".travis.yml": t(`sudo: false
