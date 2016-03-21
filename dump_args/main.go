@@ -1,4 +1,4 @@
-// Dumps the command-line arguments.
+// dump_args dumps the command-line arguments.
 package main
 
 import (

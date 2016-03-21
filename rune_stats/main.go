@@ -1,4 +1,4 @@
-// Command rune_stats prints counts of total and unique runes from stdin.
+// rune_stats prints counts of total and unique runes from stdin.
 // It's helpful for finding non-ASCII characters in files.
 package main
 
@@ -23,7 +23,6 @@ func printRuneStats(b []byte) {
 
 	sm := gist5092053.SortMapByKey(m, true)
 
-	//for i := len(sm) - 1; i >= 0; i-- { v := sm[i]
 	for _, v := range sm {
 		fmt.Printf("%q (%v)\t%v\n", v.Key, v.Key, v.Value)
 	}

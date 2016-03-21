@@ -1,4 +1,4 @@
-// Command godoc_router is a reverse proxy that augments a private godoc server instance with global godoc.org instance.
+// godoc_router is a reverse proxy that augments a private godoc server instance with global godoc.org instance.
 package main
 
 import (

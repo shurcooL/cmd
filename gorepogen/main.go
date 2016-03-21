@@ -1,4 +1,4 @@
-// Command gorepogen generates boilerplate files for Go repositories hosted on GitHub.
+// gorepogen generates boilerplate files for Go repositories hosted on GitHub.
 //
 // Running it in repo root with a Go package writes files to the current working directory.
 //

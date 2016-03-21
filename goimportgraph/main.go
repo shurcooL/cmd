@@ -1,4 +1,4 @@
-// Displays an import graph within specified Go packages.
+// goimportgraph displays an import graph within specified Go packages.
 package main
 
 import (

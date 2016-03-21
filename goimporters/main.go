@@ -1,4 +1,4 @@
-// Displays an import graph of Go packages that import the specified Go package in your GOPATH workspace.
+// goimporters displays an import graph of Go packages that import the specified Go package in your GOPATH workspace.
 package main
 
 import (

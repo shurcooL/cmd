@@ -1,10 +1,12 @@
-// Chef client command-line tool.
+// table is a chef client command-line tool.
+// It's similar to knife, but easier to install and run.
 package main
 
 import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/marpaia/chef-golang"
@@ -13,7 +15,7 @@ import (
 func chefConnect() *chef.Chef {
 	c, err := chef.Connect()
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	c.SSLNoVerify = true
 	return c
@@ -28,14 +30,14 @@ func main() {
 
 		results, err := c.Search("node", "role:"+args[0])
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 
 		for _, row := range results.Rows {
 			var node chef.Node
 			err := json.Unmarshal(row, &node)
 			if err != nil {
-				panic(err)
+				log.Fatalln(err)
 			}
 
 			fmt.Println(node.Name)
@@ -45,14 +47,14 @@ func main() {
 
 		results, err := c.Search("node", "ipaddress:"+args[1])
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 
 		for _, row := range results.Rows {
 			var node chef.Node
 			err := json.Unmarshal(row, &node)
 			if err != nil {
-				panic(err)
+				log.Fatalln(err)
 			}
 
 			fmt.Println(node.Name)
@@ -62,7 +64,7 @@ func main() {
 
 		roles, err := c.GetRoles()
 		if err != nil {
-			panic(err)
+			log.Fatalln(err)
 		}
 
 		for role := range roles {

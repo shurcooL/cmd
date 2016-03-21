@@ -1,4 +1,4 @@
-// Dumps state of attached joysticks.
+// dump_glfw3_joysticks dumps state of attached joysticks.
 package main
 
 import (
