@@ -3,11 +3,9 @@ package main
 
 import (
 	"bytes"
-	"errors"
 	"flag"
 	"fmt"
 	"go/build"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -91,17 +89,7 @@ func main() {
 
 		cmd := exec.Command("dot", "-Tsvg")
 		cmd.Stdin = &in
-		out, err := cmd.Output()
-		if err != nil {
-			return nil, err
-		}
-
-		if i := bytes.Index(out, []byte("<svg")); i < 0 {
-			return nil, errors.New("<svg not found")
-		} else {
-			out = out[i:]
-		}
-		return out, nil
+		return cmd.Output()
 	}
 
 	graphSvg, err := renderGraph()
@@ -111,17 +99,16 @@ func main() {
 
 	mux := http.NewServeMux()
 	stopServerChan := make(chan struct{})
-	mux.HandleFunc("/index", func(w http.ResponseWriter, req *http.Request) {
-		io.WriteString(w, "<html><body>")
+	mux.HandleFunc("/index.svg", func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Content-Type", "image/svg+xml")
 		w.Write(graphSvg)
-		io.WriteString(w, "</body></html>")
 
 		go func() {
 			time.Sleep(time.Second)
 			stopServerChan <- struct{}{}
 		}()
 	})
-	u3.DisplayHtmlInBrowser(mux, stopServerChan, "")
+	u3.DisplayHtmlInBrowser(mux, stopServerChan, ".svg")
 }
 
 // resolveRelative checks that the packages exist, resolves relative import paths to full.
