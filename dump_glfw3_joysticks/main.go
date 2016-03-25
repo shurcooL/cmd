@@ -3,6 +3,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
@@ -12,7 +13,7 @@ import (
 func main() {
 	err := glfw.Init()
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 	defer glfw.Terminate()
 

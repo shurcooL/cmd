@@ -27,7 +27,9 @@ func init() {
 	}
 }
 
-var testsFlag = flag.Bool("tests", false, "Include tests when building graph.")
+var (
+	testsFlag = flag.Bool("tests", false, "Include tests when building graph.")
+)
 
 func usage() {
 	fmt.Fprint(os.Stderr, "Usage: goimportgraph [packages]\n")
@@ -46,6 +48,13 @@ func main() {
 	flag.Usage = usage
 	flag.Parse()
 
+	err := run()
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func run() error {
 	importPathPatterns := flag.Args()
 	if len(importPathPatterns) == 0 {
 		importPathPatterns = []string{"."}
@@ -53,7 +62,7 @@ func main() {
 	importPaths := gotool.ImportPaths(importPathPatterns)
 	importPaths, err := resolveRelative(importPaths)
 	if err != nil {
-		log.Fatalln(err)
+		return err
 	}
 	importPathsSet := make(map[string]bool, len(importPaths))
 	for _, importPath := range importPaths {
@@ -69,7 +78,7 @@ func main() {
 		forward, _, graphErrors = importgraph.Build(&build.Default)
 	}
 	if graphErrors != nil {
-		log.Fatalln("importgraph.Build:", graphErrors)
+		return fmt.Errorf("importgraph.Build: %v", graphErrors)
 	}
 
 	renderGraph := func() ([]byte, error) {
@@ -94,7 +103,7 @@ func main() {
 
 	graphSvg, err := renderGraph()
 	if err != nil {
-		log.Fatalln("renderGraph:", err)
+		return fmt.Errorf("renderGraph: %v", err)
 	}
 
 	mux := http.NewServeMux()
@@ -109,6 +118,8 @@ func main() {
 		}()
 	})
 	u3.DisplayHtmlInBrowser(mux, stopServerChan, ".svg")
+
+	return nil
 }
 
 // resolveRelative checks that the packages exist, resolves relative import paths to full.

@@ -20,7 +20,7 @@ func main() {
 
 	stdin, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
 	out += "### Stdin ###\n" + string(stdin)
@@ -30,6 +30,6 @@ func main() {
 	// Write a copy of output to "dump_args.txt" in temp folder, in case stdout is hard to see.
 	err = ioutil.WriteFile(filepath.Join(os.TempDir(), "dump_args.txt"), []byte(out), 0644)
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 }
