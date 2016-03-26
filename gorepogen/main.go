@@ -19,8 +19,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/shurcooL/go/gists/gist5504644"
-	"github.com/shurcooL/go/u/u11"
+	"github.com/shurcooL/go/ioutil"
 )
 
 func t(text string) *template.Template {
@@ -131,10 +130,10 @@ func gen() error {
 		return err
 	}
 	var goRepo goRepo
-	if bpkg, err := gist5504644.BuildPackageFromSrcDir(wd); err == nil {
+	if bpkg, err := build.ImportDir(wd, build.ImportComment); err == nil {
 		goRepo.bpkg = bpkg
 
-		dpkg, err := gist5504644.GetDocPackage(bpkg, nil)
+		dpkg, err := docPackage(bpkg)
 		if err != nil {
 			return err
 		}
@@ -153,7 +152,7 @@ func gen() error {
 			return err
 		}
 		fmt.Println("writing", filename)
-		err = u11.WriteFile(&buf, filename)
+		err = ioutil.WriteFile(filename, &buf)
 		if err != nil {
 			return err
 		}
