@@ -7,8 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-
-	"github.com/shurcooL/go/gists/gist5092053"
 )
 
 func printRuneStats(b []byte) {
@@ -21,7 +19,7 @@ func printRuneStats(b []byte) {
 	}
 	fmt.Printf("Total unique runes: %v\n\n", len(m))
 
-	sm := gist5092053.SortMapByKey(m, true)
+	sm := SortMapByKey(m, true)
 
 	for _, v := range sm {
 		fmt.Printf("%q (%v)\t%v\n", v.Key, v.Key, v.Value)
