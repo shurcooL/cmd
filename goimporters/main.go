@@ -14,7 +14,7 @@ import (
 
 	"github.com/kisielk/gotool"
 	"github.com/shurcooL/go/importgraphutil"
-	"github.com/shurcooL/go/u/u3"
+	"github.com/shurcooL/go/openutil"
 	"golang.org/x/tools/refactor/importgraph"
 )
 
@@ -124,7 +124,7 @@ func run() error {
 			stopServerChan <- struct{}{}
 		}()
 	})
-	u3.DisplayHtmlInBrowser(mux, stopServerChan, ".svg")
+	openutil.DisplayHTMLInBrowser(mux, stopServerChan, ".svg")
 
 	return nil
 }
