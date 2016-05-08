@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httputil"
 
@@ -22,14 +23,18 @@ func dumpRequestHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	fmt.Println(string(dump))
+	goon.DumpExpr(req.RequestURI)
+	goon.DumpExpr(req.Host)
+	goon.DumpExpr(req.URL)
+	goon.DumpExpr(req.URL.Query())
+	goon.DumpExpr(req.Referer())
+	goon.DumpExpr(req.RemoteAddr)
 	if body, err := ioutil.ReadAll(req.Body); err != nil {
 		panic(err)
 	} else if len(body) <= 64 {
 		fmt.Printf("body: %v len: %v\n", body, len(body))
 	}
-	goon.DumpExpr(req.URL.Query())
-	goon.DumpExpr(req.Referer())
-	goon.DumpExpr(req.RemoteAddr)
+	fmt.Println()
 }
 
 func main() {
@@ -39,6 +44,6 @@ func main() {
 
 	err := http.ListenAndServe(*httpFlag, http.HandlerFunc(dumpRequestHandler))
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 }
