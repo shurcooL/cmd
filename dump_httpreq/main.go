@@ -29,6 +29,8 @@ func dumpRequestHandler(w http.ResponseWriter, req *http.Request) {
 	goon.DumpExpr(req.URL.Query())
 	goon.DumpExpr(req.Referer())
 	goon.DumpExpr(req.RemoteAddr)
+	goon.DumpExpr(req.Header)
+	goon.DumpExpr(req.Trailer)
 	if body, err := ioutil.ReadAll(req.Body); err != nil {
 		panic(err)
 	} else if len(body) <= 64 {
