@@ -55,11 +55,7 @@ func main() {
 }
 
 func run() error {
-	importPathPatterns := flag.Args()
-	if len(importPathPatterns) == 0 {
-		importPathPatterns = []string{"."}
-	}
-	importPaths := gotool.ImportPaths(importPathPatterns)
+	importPaths := gotool.ImportPaths(flag.Args())
 	importPaths, err := resolveRelative(importPaths)
 	if err != nil {
 		return err
