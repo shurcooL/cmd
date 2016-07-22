@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 )
 
+// TODO: Keep in sync or unify with github.com/shurcooL/vfsgen/cmd/vfsgendev/docpackage.go.
 // TODO: See if these can be cleaned up.
 
 func docPackage(bpkg *build.Package) (*doc.Package, error) {
