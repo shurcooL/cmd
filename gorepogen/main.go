@@ -38,7 +38,7 @@ Installation
 
 ` + "```bash" + `
 go get -u {{.ImportPath}}{{if .NoGo}}/...{{end}}
-{{if .HasJsTag}}go get -u -d -tags=js {{.ImportPath}}
+{{if .HasJsTag}}GOARCH=js go get -u -d {{.ImportPath}}
 {{end}}` + "```" + `
 {{if not .HasLicenseFile}}
 License
