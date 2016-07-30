@@ -20,6 +20,9 @@ import (
 	"text/template"
 
 	"github.com/shurcooL/go/ioutil"
+	"github.com/shurcooL/go/trim"
+	"github.com/shurcooL/markdownfmt/markdown"
+	"gopkg.in/pipe.v2"
 )
 
 func t(text string) *template.Template {
@@ -40,7 +43,12 @@ Installation
 go get -u {{.ImportPath}}{{if .NoGo}}/...{{end}}
 {{if .HasJsTag}}GOARCH=js go get -u -d {{.ImportPath}}
 {{end}}` + "```" + `
-{{if not .HasLicenseFile}}
+{{with .Directories}}
+Directories
+-----------
+
+{{.}}
+{{- end}}{{if not .HasLicenseFile}}
 License
 -------
 
@@ -114,6 +122,43 @@ func (r goRepo) HasJsTag() bool {
 		}
 	}
 	return false
+}
+
+func (r goRepo) Directories() (string, error) {
+	// line is tab-separated ImportPath, Doc.
+	// E.g., "github.com/shurcooL/cmd/gorepogen\tgorepogen generates boilerplate files...".
+	packageInfo := func(line []byte) []byte {
+		importPathDoc := strings.Split(trim.LastNewline(string(line)), "\t")
+		if len(importPathDoc) != 2 {
+			return []byte("error: len(importPathDoc) != 2")
+		}
+		importPath := importPathDoc[0]
+		doc := importPathDoc[1]
+
+		relativePath := strings.TrimPrefix(importPath, r.bpkg.ImportPath+"/")
+		return []byte(fmt.Sprintf("[%s](%s) | %s\n", relativePath, "https://godoc.org/"+importPath, doc))
+	}
+
+	p := pipe.Script(
+		pipe.Println("Path | Synopsis"),
+		pipe.Println("-----|---------"),
+		pipe.Line(
+			pipe.Exec("go", "list", "-f", "{{.ImportPath}}\t{{.Doc}}", "./..."),
+			pipe.Replace(packageInfo),
+		),
+	)
+
+	out, err := pipe.Output(p)
+	if err != nil {
+		return "", err
+	}
+
+	formatted, err := markdown.Process("", out, nil)
+	if err != nil {
+		return "", err
+	}
+
+	return string(formatted), nil
 }
 
 // HasLicenseFile returns true if there's a LICENSE file present in current working directory.
