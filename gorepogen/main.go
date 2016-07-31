@@ -20,9 +20,7 @@ import (
 	"text/template"
 
 	"github.com/shurcooL/go/ioutil"
-	"github.com/shurcooL/go/trim"
 	"github.com/shurcooL/markdownfmt/markdown"
-	"gopkg.in/pipe.v2"
 )
 
 func t(text string) *template.Template {
@@ -125,35 +123,25 @@ func (r goRepo) HasJsTag() bool {
 }
 
 func (r goRepo) Directories() (string, error) {
-	// line is tab-separated ImportPath, Doc.
-	// E.g., "github.com/shurcooL/cmd/gorepogen\tgorepogen generates boilerplate files...".
-	packageInfo := func(line []byte) []byte {
-		importPathDoc := strings.Split(trim.LastNewline(string(line)), "\t")
-		if len(importPathDoc) != 2 {
-			return []byte("error: len(importPathDoc) != 2")
-		}
-		importPath := importPathDoc[0]
-		doc := importPathDoc[1]
-
-		relativePath := strings.TrimPrefix(importPath, r.bpkg.ImportPath+"/")
-		return []byte(fmt.Sprintf("[%s](%s) | %s\n", relativePath, "https://godoc.org/"+importPath, doc))
-	}
-
-	p := pipe.Script(
-		pipe.Println("Path | Synopsis"),
-		pipe.Println("-----|---------"),
-		pipe.Line(
-			pipe.Exec("go", "list", "-f", "{{.ImportPath}}\t{{.Doc}}", "./..."),
-			pipe.Replace(packageInfo),
-		),
-	)
-
-	out, err := pipe.Output(p)
+	pkgs, err := packagesInside(r.bpkg.ImportPath)
 	if err != nil {
 		return "", err
 	}
 
-	formatted, err := markdown.Process("", out, nil)
+	// If there are no packages, don't include a directories section.
+	if len(pkgs) == 0 {
+		return "", nil
+	}
+
+	md := new(bytes.Buffer)
+	fmt.Fprintln(md, "Path | Synopsis")
+	fmt.Fprintln(md, "-----|---------")
+	for _, p := range pkgs {
+		relativePath := strings.TrimPrefix(p.ImportPath, r.bpkg.ImportPath+"/")
+		fmt.Fprintf(md, "[%s](%s) | %s\n", relativePath, "https://godoc.org/"+p.ImportPath, p.Doc)
+	}
+
+	formatted, err := markdown.Process("", md.Bytes(), nil)
 	if err != nil {
 		return "", err
 	}
