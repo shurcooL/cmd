@@ -15,7 +15,7 @@ import (
 
 var (
 	httpFlag             = flag.String("http", ":80", "Listen for HTTP connections on this address.")
-	gitHubUserFlag       = flag.String("github-user", "", "GitHub user with private repos (required).")
+	githubUserFlag       = flag.String("github-user", "", "GitHub user with private repos (required).")
 	privateGodocHostFlag = flag.String("private-godoc-host", "127.0.0.1:8080", "Host of private Godoc server.")
 )
 
@@ -23,8 +23,8 @@ func NewRouter() *httputil.ReverseProxy {
 	director := func(req *http.Request) {
 		var usePrivate bool
 		switch {
-		case strings.HasPrefix(req.URL.Path, fmt.Sprintf("/github.com/%s/", *gitHubUserFlag)) ||
-			strings.HasPrefix(req.URL.Query().Get("q"), fmt.Sprintf("github.com/%s/", *gitHubUserFlag)):
+		case strings.HasPrefix(req.URL.Path, fmt.Sprintf("/github.com/%s/", *githubUserFlag)) ||
+			strings.HasPrefix(req.URL.Query().Get("q"), fmt.Sprintf("github.com/%s/", *githubUserFlag)):
 
 			usePrivate = true
 		case req.URL.Path == "/-/refresh":
@@ -39,7 +39,7 @@ func NewRouter() *httputil.ReverseProxy {
 			req.Body = ioutil.NopCloser(bytes.NewReader(body))
 
 			// TODO: Maybe just do it right and use url.ParseQuery?
-			usePrivate = strings.HasPrefix(string(body), "path="+url.QueryEscape(fmt.Sprintf("github.com/%s/", *gitHubUserFlag)))
+			usePrivate = strings.HasPrefix(string(body), "path="+url.QueryEscape(fmt.Sprintf("github.com/%s/", *githubUserFlag)))
 		case req.URL.Path == "/-/index":
 			usePrivate = true
 		case req.URL.Path == "/":
@@ -63,7 +63,7 @@ func NewRouter() *httputil.ReverseProxy {
 func main() {
 	flag.Parse()
 
-	if *gitHubUserFlag == "" {
+	if *githubUserFlag == "" {
 		flag.Usage()
 		os.Exit(2)
 		return
