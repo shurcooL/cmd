@@ -19,18 +19,17 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/mattn/go-runewidth"
 	"github.com/shurcooL/go/ioutil"
 	"github.com/shurcooL/markdownfmt/markdown"
 )
 
-func t(text string) *template.Template {
-	return template.Must(template.New("").Parse(text))
-}
-
 // Filename -> Template.
 var templates = map[string]*template.Template{
 
-	"README.md": t(`# {{.Title}} [![Build Status](https://travis-ci.org/{{.TravisCIPath}}.svg?branch=master)](https://travis-ci.org/{{.TravisCIPath}}) [![GoDoc](https://godoc.org/{{.ImportPath}}?status.svg)](https://godoc.org/{{.ImportPath}})
+	"README.md": t(`{{.Title | underline}}
+
+[![Build Status](https://travis-ci.org/{{.TravisCIPath}}.svg?branch=master)](https://travis-ci.org/{{.TravisCIPath}}) [![GoDoc](https://godoc.org/{{.ImportPath}}?status.svg)](https://godoc.org/{{.ImportPath}})
 
 {{with .Doc}}{{.Doc}}{{else}}...
 {{end}}
@@ -201,4 +200,10 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+}
+
+func t(text string) *template.Template {
+	return template.Must(template.New("").Funcs(template.FuncMap{
+		"underline": func(s string) string { return s + "\n" + strings.Repeat("=", runewidth.StringWidth(s)) },
+	}).Parse(text))
 }
