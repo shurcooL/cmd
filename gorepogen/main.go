@@ -44,11 +44,12 @@ go get -u {{.ImportPath}}{{if .NoGo}}/...{{end}}
 Directories
 -----------
 
-{{.}}
-{{- end}}{{if not .HasLicenseFile}}
+{{.}}{{end}}
 License
 -------
-
+{{if .HasLicenseFile}}
+-	[MIT License](LICENSE)
+{{else}}
 -	[MIT License](https://opensource.org/licenses/mit-license.php)
 {{end}}`),
 
@@ -150,10 +151,8 @@ func (r goRepo) Directories() (string, error) {
 
 // HasLicenseFile returns true if there's a LICENSE file present in current working directory.
 func (r goRepo) HasLicenseFile() bool {
-	if fi, err := os.Stat("LICENSE"); err == nil && !fi.IsDir() {
-		return true
-	}
-	return false
+	fi, err := os.Stat("LICENSE")
+	return err == nil && !fi.IsDir()
 }
 
 func gen() error {
