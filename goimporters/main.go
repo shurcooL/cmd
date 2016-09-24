@@ -50,7 +50,7 @@ func main() {
 
 func run() error {
 	importPaths := gotool.ImportPaths(flag.Args())
-	importPaths, err := resolveRelative(importPaths)
+	importPaths, err := resolveLocalAndFind(importPaths, &build.Default) // Resolve local import paths and check that all packages can be found and imported. Otherwise we won't get any results in the import graph, so it's better to print a "can't load package" error message right away.
 	if err != nil {
 		return err
 	}
@@ -125,18 +125,20 @@ func run() error {
 	return nil
 }
 
-// resolveRelative checks that the packages exist, resolves relative import paths to full.
-func resolveRelative(importPaths []string) ([]string, error) {
+// resolveLocalAndFind resolves local import paths to full import paths,
+// and checks that all packages can be found and imported using given build context.
+func resolveLocalAndFind(importPaths []string, bctx *build.Context) ([]string, error) {
 	wd, err := os.Getwd()
 	if err != nil {
 		return nil, err
 	}
+	ips := make([]string, len(importPaths))
 	for i, path := range importPaths {
-		bpkg, err := build.Import(path, wd, 0)
+		bpkg, err := bctx.Import(path, wd, 0) // Shouldn't use build.FindOnly because we want to ensure package can be imported successfully, not just that the directory exists.
 		if err != nil {
 			return nil, fmt.Errorf("can't load package %q: %v", path, err)
 		}
-		importPaths[i] = bpkg.ImportPath
+		ips[i] = bpkg.ImportPath
 	}
-	return importPaths, nil
+	return ips, nil
 }
