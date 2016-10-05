@@ -118,7 +118,7 @@ func run() error {
 	return nil
 }
 
-// resolveLocalAndFind resolves local import paths to full import paths,
+// resolveLocalAndFind resolves local import paths to full import paths (ignoring vendor directories),
 // and checks that all packages can be found and imported using given build context.
 func resolveLocalAndFind(importPaths []string, bctx *build.Context) ([]string, error) {
 	wd, err := os.Getwd()
@@ -127,7 +127,9 @@ func resolveLocalAndFind(importPaths []string, bctx *build.Context) ([]string, e
 	}
 	ips := make([]string, len(importPaths))
 	for i, path := range importPaths {
-		bpkg, err := bctx.Import(path, wd, 0) // Shouldn't use build.FindOnly because we want to ensure package can be imported successfully, not just that the directory exists.
+		// Shouldn't use build.FindOnly because we want to ensure package can be imported successfully, not just that the directory exists.
+		// Use build.IgnoreVendor to avoid full import paths turning into ones inside vendor directory, since we don't want those import paths.
+		bpkg, err := bctx.Import(path, wd, build.IgnoreVendor)
 		if err != nil {
 			return nil, fmt.Errorf("can't load package %q: %v", path, err)
 		}
