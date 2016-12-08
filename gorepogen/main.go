@@ -56,11 +56,11 @@ License
 	".travis.yml": t(`sudo: false
 language: go
 go:
-  - 1.7.4
-  - tip
+  - 1.x
+  - master
 matrix:
   allow_failures:
-    - go: tip
+    - go: master
   fast_finish: true
 install:
   - # Do nothing. This is needed to prevent default install action "go get -t -v ./..." from happening here (we want it to happen inside script step).
