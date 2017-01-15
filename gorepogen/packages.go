@@ -15,15 +15,16 @@ type pkg struct {
 // packagesInside returns a list of packages that have root as import path prefix,
 // not including package with import path equal to root.
 func packagesInside(root string) ([]pkg, error) {
-	var pkgs []pkg
 	cmd := exec.Command("go", "list", "-f", "{{.ImportPath}}\t{{.Doc}}", root+"/...")
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err
 	}
-	if err := cmd.Start(); err != nil {
+	err = cmd.Start()
+	if err != nil {
 		return nil, err
 	}
+	var pkgs []pkg
 	br := bufio.NewReader(stdout)
 	for line, err := br.ReadString('\n'); err == nil; line, err = br.ReadString('\n') {
 		importPathDoc := strings.Split(line[:len(line)-1], "\t") // Trim last newline.
@@ -36,7 +37,8 @@ func packagesInside(root string) ([]pkg, error) {
 		}
 		pkgs = append(pkgs, pkg{ImportPath: importPath, Doc: doc})
 	}
-	if err := cmd.Wait(); err != nil {
+	err = cmd.Wait()
+	if err != nil {
 		return nil, err
 	}
 	return pkgs, nil
