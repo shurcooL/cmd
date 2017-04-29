@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -19,7 +20,21 @@ var (
 	privateGodocHostFlag = flag.String("private-godoc-host", "127.0.0.1:8080", "Host of private Godoc server.")
 )
 
-func NewRouter() *httputil.ReverseProxy {
+func main() {
+	flag.Parse()
+
+	if *githubUserFlag == "" {
+		flag.Usage()
+		os.Exit(2)
+	}
+
+	err := http.ListenAndServe(*httpFlag, newRouter())
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func newRouter() *httputil.ReverseProxy {
 	director := func(req *http.Request) {
 		var usePrivate bool
 		switch {
@@ -58,19 +73,4 @@ func NewRouter() *httputil.ReverseProxy {
 		}
 	}
 	return &httputil.ReverseProxy{Director: director}
-}
-
-func main() {
-	flag.Parse()
-
-	if *githubUserFlag == "" {
-		flag.Usage()
-		os.Exit(2)
-		return
-	}
-
-	err := http.ListenAndServe(*httpFlag, NewRouter())
-	if err != nil {
-		panic(err)
-	}
 }

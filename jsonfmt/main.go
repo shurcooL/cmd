@@ -4,11 +4,21 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"flag"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
 )
+
+func main() {
+	flag.Parse()
+
+	err := run()
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
 
 func run() error {
 	in, err := ioutil.ReadAll(os.Stdin)
@@ -26,11 +36,4 @@ func run() error {
 	}
 	_, err = io.Copy(os.Stdout, &out)
 	return err
-}
-
-func main() {
-	err := run()
-	if err != nil {
-		log.Fatalln(err)
-	}
 }

@@ -16,7 +16,18 @@ var (
 	httpFlag = flag.String("http", ":8080", "Listen for HTTP connections on this address.")
 )
 
-func dumpRequestHandler(w http.ResponseWriter, req *http.Request) {
+func main() {
+	flag.Parse()
+
+	fmt.Printf("Starting HTTP request dumper, listening on %q...\n", *httpFlag)
+
+	err := http.ListenAndServe(*httpFlag, http.HandlerFunc(dumpHandler))
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func dumpHandler(w http.ResponseWriter, req *http.Request) {
 	dump, err := httputil.DumpRequest(req, true)
 	if err != nil {
 		panic(err)
@@ -37,15 +48,4 @@ func dumpRequestHandler(w http.ResponseWriter, req *http.Request) {
 		fmt.Printf("body: %v len: %v\n", body, len(body))
 	}
 	fmt.Println()
-}
-
-func main() {
-	flag.Parse()
-
-	fmt.Printf("Starting HTTP request dumper, listening on %q...\n", *httpFlag)
-
-	err := http.ListenAndServe(*httpFlag, http.HandlerFunc(dumpRequestHandler))
-	if err != nil {
-		log.Fatalln(err)
-	}
 }

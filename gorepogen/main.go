@@ -24,6 +24,52 @@ import (
 	"github.com/shurcooL/markdownfmt/markdown"
 )
 
+func main() {
+	flag.Parse()
+
+	err := run()
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+func run() error {
+	wd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	var goRepo goRepo
+	if bpkg, err := build.ImportDir(wd, build.ImportComment); err == nil {
+		goRepo.bpkg = bpkg
+
+		dpkg, err := docPackage(bpkg)
+		if err != nil {
+			return err
+		}
+		goRepo.Doc = dpkg
+	} else if _, ok := err.(*build.NoGoError); ok {
+		goRepo.bpkg = bpkg
+		goRepo.NoGo = true
+	} else {
+		return err
+	}
+
+	for filename, t := range templates {
+		var buf bytes.Buffer
+		err = t.Execute(&buf, goRepo)
+		if err != nil {
+			return err
+		}
+		fmt.Println("writing", filename)
+		err = ioutil.WriteFile(filename, &buf)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Filename -> Template.
 var templates = map[string]*template.Template{
 
@@ -153,52 +199,6 @@ func (r goRepo) Directories() (string, error) {
 func (r goRepo) HasLicenseFile() bool {
 	fi, err := os.Stat("LICENSE")
 	return err == nil && !fi.IsDir()
-}
-
-func gen() error {
-	wd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	var goRepo goRepo
-	if bpkg, err := build.ImportDir(wd, build.ImportComment); err == nil {
-		goRepo.bpkg = bpkg
-
-		dpkg, err := docPackage(bpkg)
-		if err != nil {
-			return err
-		}
-		goRepo.Doc = dpkg
-	} else if _, ok := err.(*build.NoGoError); ok {
-		goRepo.bpkg = bpkg
-		goRepo.NoGo = true
-	} else {
-		return err
-	}
-
-	for filename, t := range templates {
-		var buf bytes.Buffer
-		err = t.Execute(&buf, goRepo)
-		if err != nil {
-			return err
-		}
-		fmt.Println("writing", filename)
-		err = ioutil.WriteFile(filename, &buf)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func main() {
-	flag.Parse()
-
-	err := gen()
-	if err != nil {
-		log.Fatalln(err)
-	}
 }
 
 func t(text string) *template.Template {
