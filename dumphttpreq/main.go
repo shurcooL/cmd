@@ -1,4 +1,4 @@
-// dump_httpreq dumps incoming HTTP requests with full detail.
+// dumphttpreq dumps incoming HTTP requests with full detail.
 package main
 
 import (

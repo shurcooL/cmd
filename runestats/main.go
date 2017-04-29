@@ -1,4 +1,4 @@
-// rune_stats prints counts of total and unique runes from stdin.
+// runestats prints counts of total and unique runes from stdin.
 // It's helpful for finding non-ASCII characters in files.
 package main
 

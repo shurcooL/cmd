@@ -1,4 +1,4 @@
-// dump_args dumps the command-line arguments.
+// dumpargs dumps the command-line arguments.
 package main
 
 import (
@@ -27,8 +27,8 @@ func main() {
 
 	fmt.Println(out)
 
-	// Write a copy of output to "dump_args.txt" in temp folder, in case stdout is hard to see.
-	err = ioutil.WriteFile(filepath.Join(os.TempDir(), "dump_args.txt"), []byte(out), 0644)
+	// Write a copy of output to "dumpargs.txt" in temp folder, in case stdout is hard to see.
+	err = ioutil.WriteFile(filepath.Join(os.TempDir(), "dumpargs.txt"), []byte(out), 0644)
 	if err != nil {
 		log.Fatalln(err)
 	}
