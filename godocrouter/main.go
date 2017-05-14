@@ -22,7 +22,6 @@ var (
 
 func main() {
 	flag.Parse()
-
 	if *githubUserFlag == "" {
 		flag.Usage()
 		os.Exit(2)
