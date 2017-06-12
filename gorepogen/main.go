@@ -8,20 +8,18 @@ package main
 
 import (
 	"bytes"
-	"errors"
 	"flag"
 	"fmt"
+	"go/ast"
 	"go/build"
 	"go/doc"
+	"go/parser"
+	"go/token"
 	"log"
 	"os"
-	"path"
-	"strings"
-	"text/template"
+	"path/filepath"
 
-	"github.com/mattn/go-runewidth"
 	"github.com/shurcooL/go/ioutil"
-	"github.com/shurcooL/markdownfmt/markdown"
 )
 
 func main() {
@@ -41,12 +39,10 @@ func run() error {
 	var goRepo goRepo
 	if bpkg, err := build.ImportDir(wd, build.ImportComment); err == nil {
 		goRepo.bpkg = bpkg
-
-		dpkg, err := docPackage(bpkg)
+		goRepo.Doc, err = docPackage(bpkg)
 		if err != nil {
 			return err
 		}
-		goRepo.Doc = dpkg
 	} else if _, ok := err.(*build.NoGoError); ok {
 		goRepo.bpkg = bpkg
 		goRepo.NoGo = true
@@ -56,7 +52,7 @@ func run() error {
 
 	for filename, t := range templates {
 		var buf bytes.Buffer
-		err = t.Execute(&buf, goRepo)
+		err := t.Execute(&buf, goRepo)
 		if err != nil {
 			return err
 		}
@@ -70,139 +66,28 @@ func run() error {
 	return nil
 }
 
-// Filename -> Template.
-var templates = map[string]*template.Template{
+// TODO: Keep in sync or unify with github.com/shurcooL/vfsgen/cmd/vfsgendev/parse.go.
+// TODO: See if these can be cleaned up.
 
-	"README.md": t(`{{.Title | underline}}
-
-[![Build Status](https://travis-ci.org/{{.TravisCIPath}}.svg?branch=master)](https://travis-ci.org/{{.TravisCIPath}}) [![GoDoc](https://godoc.org/{{.ImportPath}}?status.svg)](https://godoc.org/{{.ImportPath}})
-
-{{with .Doc}}{{.Doc}}{{else}}...
-{{end}}
-Installation
-------------
-
-` + "```bash" + `
-go get -u {{.ImportPath}}{{if .NoGo}}/...{{end}}
-{{if .HasJsTag}}GOARCH=js go get -u -d {{.ImportPath}}
-{{end}}` + "```" + `
-{{with .Directories}}
-Directories
------------
-
-{{.}}{{end}}
-License
--------
-{{if .HasLicenseFile}}
--	[MIT License](LICENSE)
-{{else}}
--	[MIT License](https://opensource.org/licenses/mit-license.php)
-{{end}}`),
-
-	".travis.yml": t(`sudo: false
-language: go
-go:
-  - 1.x
-  - master
-matrix:
-  allow_failures:
-    - go: master
-  fast_finish: true
-install:
-  - # Do nothing. This is needed to prevent default install action "go get -t -v ./..." from happening here (we want it to happen inside script step).
-script:
-  - go get -t -v ./...
-  - diff -u <(echo -n) <(gofmt -d -s .)
-  - go tool vet .
-  - go test -v -race ./...
-`),
-}
-
-type goRepo struct {
-	bpkg *build.Package
-	NoGo bool
-	Doc  *doc.Package
-}
-
-// ImportPath returns the import path for a GitHub repository.
-func (r goRepo) ImportPath() string {
-	return r.bpkg.ImportPath
-}
-
-// TravisCIPath returns the Travis CI path for a GitHub repository.
-func (r goRepo) TravisCIPath() (string, error) {
-	c := strings.Split(r.bpkg.ImportPath, "/")
-	if len(c) < 3 {
-		return "", errors.New("unexpected number of import path components")
+func docPackage(bpkg *build.Package) (*doc.Package, error) {
+	apkg, err := astPackage(bpkg)
+	if err != nil {
+		return nil, err
 	}
-	if c[0] != "github.com" {
-		return "", errors.New("Travis CI only supports GitHub repositories")
-	}
-	return path.Join(c[1], c[2]), nil
+	return doc.New(apkg, bpkg.ImportPath, 0), nil
 }
 
-// Title is the package name for libraries and import path base for commands.
-// TODO: And repo name otherwise.
-func (r goRepo) Title() string {
-	switch {
-	case r.NoGo:
-		return path.Base(r.bpkg.ImportPath)
-	case r.bpkg.IsCommand():
-		return path.Base(r.bpkg.ImportPath)
-	case !r.bpkg.IsCommand():
-		return r.bpkg.Name
-	default:
-		panic("unreachable")
-	}
-}
-
-func (r goRepo) HasJsTag() bool {
-	if r.NoGo { // TODO: Look in inner Go packages, if any?
-		return false
-	}
-	for _, tag := range r.bpkg.AllTags {
-		if tag == "js" {
-			return true
+func astPackage(bpkg *build.Package) (*ast.Package, error) {
+	// TODO: Either find a way to use golang.org/x/tools/importer (from Go 1.4~ or older, it no longer exists as of Go 1.6) directly, or do file AST parsing in parallel like it does.
+	filenames := append(bpkg.GoFiles, bpkg.CgoFiles...)
+	files := make(map[string]*ast.File, len(filenames))
+	fset := token.NewFileSet()
+	for _, filename := range filenames {
+		fileAst, err := parser.ParseFile(fset, filepath.Join(bpkg.Dir, filename), nil, parser.ParseComments)
+		if err != nil {
+			return nil, err
 		}
+		files[filename] = fileAst // TODO: Figure out if filename or full path are to be used (the key of this map doesn't seem to be used anywhere).
 	}
-	return false
-}
-
-func (r goRepo) Directories() (string, error) {
-	pkgs, err := packagesInside(r.bpkg.ImportPath)
-	if err != nil {
-		return "", err
-	}
-
-	// If there are no packages, don't include a directories section.
-	if len(pkgs) == 0 {
-		return "", nil
-	}
-
-	md := new(bytes.Buffer)
-	fmt.Fprintln(md, "Path | Synopsis")
-	fmt.Fprintln(md, "-----|---------")
-	for _, p := range pkgs {
-		relativePath := strings.TrimPrefix(p.ImportPath, r.bpkg.ImportPath+"/")
-		fmt.Fprintf(md, "[%s](%s) | %s\n", relativePath, "https://godoc.org/"+p.ImportPath, p.Doc)
-	}
-
-	formatted, err := markdown.Process("", md.Bytes(), nil)
-	if err != nil {
-		return "", err
-	}
-
-	return string(formatted), nil
-}
-
-// HasLicenseFile returns true if there's a LICENSE file present in current working directory.
-func (r goRepo) HasLicenseFile() bool {
-	fi, err := os.Stat("LICENSE")
-	return err == nil && !fi.IsDir()
-}
-
-func t(text string) *template.Template {
-	return template.Must(template.New("").Funcs(template.FuncMap{
-		"underline": func(s string) string { return s + "\n" + strings.Repeat("=", runewidth.StringWidth(s)) },
-	}).Parse(text))
+	return &ast.Package{Name: bpkg.Name, Files: files}, nil
 }
