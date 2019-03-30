@@ -15,11 +15,10 @@ import (
 	"go/doc"
 	"go/parser"
 	"go/token"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
-
-	"github.com/shurcooL/go/ioutil"
 )
 
 func main() {
@@ -57,7 +56,7 @@ func run() error {
 			return err
 		}
 		fmt.Println("writing", filename)
-		err = ioutil.WriteFile(filename, &buf)
+		err = ioutil.WriteFile(filename, buf.Bytes(), 0644)
 		if err != nil {
 			return err
 		}
