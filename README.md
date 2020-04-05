@@ -27,6 +27,7 @@ Directories
 | [gorepogen](https://godoc.org/github.com/shurcooL/cmd/gorepogen)                   | gorepogen generates boilerplate files for Go repositories hosted on GitHub.                                        |
 | [jsonfmt](https://godoc.org/github.com/shurcooL/cmd/jsonfmt)                       | jsonfmt pretty-prints JSON from stdin.                                                                             |
 | [runestats](https://godoc.org/github.com/shurcooL/cmd/runestats)                   | runestats prints counts of total and unique runes from stdin.                                                      |
+| [wasmserve](https://godoc.org/github.com/shurcooL/cmd/wasmserve)                   | wasmserve compiles a Go command to WebAssembly and serves it via HTTP.                                             |
 
 License
 -------
