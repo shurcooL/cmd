@@ -3,6 +3,8 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -12,7 +14,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 
 	"github.com/shurcooL/go/osutil"
 	"github.com/shurcooL/home/httputil"
@@ -32,13 +33,19 @@ func main() {
 }
 
 func run() error {
-	err := http.ListenAndServe(*httpFlag, httputil.ErrorHandler(admin{}, handler{}.ServeHTTP))
+	goroot, err := goroot()
+	if err != nil {
+		return err
+	}
+	err = http.ListenAndServe(*httpFlag, httputil.ErrorHandler(admin{}, handler{goroot}.ServeHTTP))
 	return err
 }
 
-type handler struct{}
+type handler struct {
+	goroot string
+}
 
-func (handler) ServeHTTP(w http.ResponseWriter, req *http.Request) error {
+func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) error {
 	if err := httputil.AllowMethods(req, http.MethodGet, http.MethodHead); err != nil {
 		return err
 	}
@@ -63,7 +70,7 @@ func (handler) ServeHTTP(w http.ResponseWriter, req *http.Request) error {
 		return serveFile(w, req, wasmFile)
 	case req.URL.Path == "/wasm_exec.js":
 		w.Header().Set("Content-Type", "application/javascript")
-		return serveFile(w, req, filepath.Join(runtime.GOROOT(), "misc", "wasm", "wasm_exec.js"))
+		return serveFile(w, req, filepath.Join(h.goroot, "misc", "wasm", "wasm_exec.js"))
 	case req.URL.Path == "/favicon.ico":
 		return os.ErrNotExist
 	default:
@@ -140,4 +147,20 @@ type admin struct{}
 
 func (admin) GetAuthenticated(context.Context) (users.User, error) {
 	return users.User{SiteAdmin: true}, nil
+}
+
+// goroot returns the go env GOROOT value by invoking the go command.
+func goroot() (string, error) {
+	out, err := exec.Command("go", "env", "-json", "GOROOT").Output()
+	if ee := (*exec.ExitError)(nil); errors.As(err, &ee) {
+		return "", fmt.Errorf("go command exited unsuccessfully: %v\n%s", ee.ProcessState.String(), ee.Stderr)
+	} else if err != nil {
+		return "", err
+	}
+	var env struct{ GOROOT string }
+	err = json.Unmarshal(out, &env)
+	if err != nil {
+		return "", err
+	}
+	return env.GOROOT, nil
 }
