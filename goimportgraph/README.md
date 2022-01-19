@@ -6,8 +6,8 @@ Displays an import graph within specified Go packages.
 Installation
 ------------
 
-```bash
-go get -u github.com/shurcooL/cmd/goimportgraph
+```sh
+go install github.com/shurcooL/cmd/goimportgraph@latest
 ```
 
 Note that it requires `dot` command to be available (`brew install graphviz`).
@@ -15,7 +15,7 @@ Note that it requires `dot` command to be available (`brew install graphviz`).
 Usage
 -----
 
-```bash
+```sh
 goimportgraph packages
 ```
 
@@ -24,7 +24,7 @@ Example
 
 Here's a sample run:
 
-```bash
+```sh
 goimportgraph encoding/...
 ```
 
